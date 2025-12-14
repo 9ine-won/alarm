@@ -1,5 +1,6 @@
 package com.example.alarmgame.platform
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -30,6 +31,10 @@ class AlarmNotificationManager(private val context: Context) {
     }
 
     fun showRingingNotification(alarmId: Long) {
+        notificationManager.notify(NOTIFICATION_ID_RING, buildRingingNotification(alarmId))
+    }
+
+    fun buildRingingNotification(alarmId: Long): Notification {
         val fullScreenIntent = Intent(context, AlarmRingingActivity::class.java).apply {
             putExtra(AlarmReceiver.EXTRA_ALARM_ID, alarmId)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -41,7 +46,7 @@ class AlarmNotificationManager(private val context: Context) {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID_ALARM)
+        return NotificationCompat.Builder(context, CHANNEL_ID_ALARM)
             .setSmallIcon(R.drawable.app_icon)
             .setContentTitle("알람이 울리는 중")
             .setContentText("알람을 해제하려면 게임을 완료하세요.")
@@ -50,8 +55,7 @@ class AlarmNotificationManager(private val context: Context) {
             .setOngoing(true)
             .setAutoCancel(false)
             .setFullScreenIntent(fullScreenPendingIntent, true)
-
-        notificationManager.notify(NOTIFICATION_ID_RING, builder.build())
+            .build()
     }
 
     fun cancelRingingNotification() {

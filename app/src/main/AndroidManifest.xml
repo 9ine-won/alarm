@@ -64,6 +64,11 @@
             </intent-filter>
         </receiver>
 
+        <service
+            android:name=".platform.AlarmForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
     </application>
 
 </manifest>

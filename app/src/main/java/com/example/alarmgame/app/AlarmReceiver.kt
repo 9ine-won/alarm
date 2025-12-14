@@ -5,11 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.example.alarmgame.platform.AlarmNotificationManager
+import com.example.alarmgame.platform.AlarmForegroundService
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         val alarmId = intent?.getLongExtra(EXTRA_ALARM_ID, -1L) ?: -1L
         Log.d(TAG, "onReceive alarmId=$alarmId, starting ringing activity")
+        AlarmForegroundService.start(context, alarmId)
         AlarmNotificationManager(context).showRingingNotification(alarmId)
         val ringIntent = Intent(context, AlarmRingingActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
