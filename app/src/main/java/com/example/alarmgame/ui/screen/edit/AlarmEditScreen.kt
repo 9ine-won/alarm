@@ -152,6 +152,8 @@ fun AlarmEditScreen(
                 }
                 item {
                     GameCard(
+                        gameEnabled = uiState.form.gameEnabled,
+                        onGameToggle = viewModel::updateGameEnabled,
                         game = uiState.form.gameType,
                         onGameSelect = viewModel::updateGameType,
                         difficulty = uiState.form.difficulty,
@@ -286,26 +288,65 @@ private fun LabelCard(
     label: String,
     onLabelChange: (String) -> Unit
 ) {
+    var expanded by rememberSaveable { mutableStateOf(label.isNotBlank()) }
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        onClick = { expanded = !expanded }
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Icon(imageVector = Icons.Outlined.Alarm, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("알람 이름", style = MaterialTheme.typography.titleMedium)
-            }
-            OutlinedTextField(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                value = label,
-                onValueChange = onLabelChange,
-                placeholder = { Text("알람 이름 (예: 기상, 약 먹기)") },
-                singleLine = true
-            )
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Alarm,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Column {
+                        Text("알람 이름", style = MaterialTheme.typography.titleMedium)
+                        if (!expanded && label.isBlank()) {
+                            Text(
+                                text = "탭하여 추가 (선택사항)",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else if (!expanded && label.isNotBlank()) {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = if (expanded) "접기" else "펼치기",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (expanded) {
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = label,
+                    onValueChange = onLabelChange,
+                    placeholder = { Text("알람 이름 (예: 기상, 약 먹기)") },
+                    singleLine = true
+                )
+            }
         }
     }
 }
@@ -330,11 +371,12 @@ private fun RepeatCard(
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 DayOfWeek.values().forEach { day ->
                     val selected = (selectedMask and (1 shl ((day.ordinal + 1) % 7))) != 0
                     AssistChip(
+                        modifier = Modifier.weight(1f),
                         onClick = { onToggle(day) },
                         label = { Text(dayLabel(day)) },
                         colors = if (selected) {
@@ -487,6 +529,8 @@ private fun VibrationCard(
 
 @Composable
 private fun GameCard(
+    gameEnabled: Boolean,
+    onGameToggle: (Boolean) -> Unit,
     game: GameType,
     onGameSelect: (GameType) -> Unit,
     difficulty: Difficulty,
@@ -505,73 +549,82 @@ private fun GameCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Icon(imageVector = Icons.Outlined.Gamepad, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("알람 해제 게임", style = MaterialTheme.typography.titleMedium)
-            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                gameCards.forEach { (type, label) ->
-                    val selected = type == game
-                    Card(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-                        ),
-                        onClick = { onGameSelect(type) }
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(horizontal = 12.dp, vertical = 14.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(imageVector = Icons.Outlined.Gamepad, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("알람 해제 게임", style = MaterialTheme.typography.titleMedium)
+                }
+                Switch(checked = gameEnabled, onCheckedChange = onGameToggle)
+            }
+            if (gameEnabled) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    gameCards.forEach { (type, label) ->
+                        val selected = type == game
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                            ),
+                            onClick = { onGameSelect(type) }
                         ) {
-                            Text(
-                                text = if (type == GameType.MOLE) "🐹" else "🔨",
-                                style = MaterialTheme.typography.headlineSmall
-                            )
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                            Column(
+                                modifier = Modifier
+                                    .padding(horizontal = 12.dp, vertical = 14.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = if (type == GameType.MOLE) "🐹" else "🔨",
+                                    style = MaterialTheme.typography.headlineSmall
+                                )
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("난이도", style = MaterialTheme.typography.titleSmall)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Difficulty.values().forEach { diff ->
+                            val selected = difficulty == diff
+                            val color = difficultyColor(diff)
+                            AssistChip(
+                                onClick = { onDifficultySelect(diff) },
+                                label = { Text(difficultyLabel(diff)) },
+                                colors = if (selected) {
+                                    AssistChipDefaults.assistChipColors(
+                                        containerColor = color,
+                                        labelColor = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                } else {
+                                    AssistChipDefaults.assistChipColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    )
+                                }
                             )
                         }
                     }
                 }
+                InfoCard(
+                    title = "게임 성공 시 알람이 꺼집니다",
+                    body = "선택한 난이도에 따라 게임 진행 속도가 달라집니다."
+                )
             }
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("난이도", style = MaterialTheme.typography.titleSmall)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Difficulty.values().forEach { diff ->
-                        val selected = difficulty == diff
-                        val color = difficultyColor(diff)
-                        AssistChip(
-                            onClick = { onDifficultySelect(diff) },
-                            label = { Text(difficultyLabel(diff)) },
-                            colors = if (selected) {
-                                AssistChipDefaults.assistChipColors(
-                                    containerColor = color,
-                                    labelColor = MaterialTheme.colorScheme.onPrimary
-                                )
-                            } else {
-                                AssistChipDefaults.assistChipColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-            InfoCard(
-                title = "게임 성공 시 알람이 꺼집니다",
-                body = "선택한 난이도에 따라 게임 진행 속도가 달라집니다."
-            )
         }
     }
 }

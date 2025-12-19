@@ -20,6 +20,7 @@ data class AlarmEntity(
     val snoozeEnabled: Boolean,
     val snoozeMinutes: Int,
     val snoozeMaxCount: Int,
+    val gameEnabled: Boolean = false,
     val gameType: GameType,
     val difficulty: Difficulty,
     val nextTriggerAt: Long,

@@ -34,9 +34,10 @@ data class AlarmFormState(
     val soundType: SoundType = SoundType.RINGTONE,
     val soundUri: String? = null,
     val vibrate: Boolean = true,
-    val snoozeEnabled: Boolean = true,
+    val snoozeEnabled: Boolean = false,
     val snoozeMinutes: Int = 5,
     val snoozeMaxCount: Int = 3,
+    val gameEnabled: Boolean = false,
     val gameType: GameType = GameType.MOLE,
     val difficulty: Difficulty = Difficulty.NORMAL,
     val createdAt: Long = System.currentTimeMillis()
@@ -138,6 +139,10 @@ class AlarmEditViewModel @Inject constructor(
         _uiState.update { it.copy(form = it.form.copy(snoozeMaxCount = count.coerceIn(1, 10))) }
     }
 
+    fun updateGameEnabled(enabled: Boolean) {
+        _uiState.update { it.copy(form = it.form.copy(gameEnabled = enabled)) }
+    }
+
     fun updateGameType(type: GameType) {
         _uiState.update { it.copy(form = it.form.copy(gameType = type)) }
     }
@@ -176,6 +181,7 @@ class AlarmEditViewModel @Inject constructor(
         snoozeEnabled = snoozeEnabled,
         snoozeMinutes = snoozeMinutes,
         snoozeMaxCount = snoozeMaxCount,
+        gameEnabled = gameEnabled,
         gameType = gameType,
         difficulty = difficulty,
         createdAt = createdAt
@@ -194,6 +200,7 @@ class AlarmEditViewModel @Inject constructor(
         snoozeEnabled = snoozeEnabled,
         snoozeMinutes = snoozeMinutes,
         snoozeMaxCount = snoozeMaxCount,
+        gameEnabled = gameEnabled,
         gameType = gameType,
         difficulty = difficulty,
         nextTriggerAt = nextTriggerAt,
