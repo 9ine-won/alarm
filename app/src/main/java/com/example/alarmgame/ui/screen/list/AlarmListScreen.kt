@@ -363,10 +363,12 @@ private fun HeroCard(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
-                Text(
-                    text = if (nextAlarm != null) "게임 클리어해야 해제됩니다." else "알람을 추가해보세요.",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                )
+                if (nextAlarm == null) {
+                    Text(
+                        text = "알람을 추가해보세요.",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
+                }
                 Spacer(modifier = Modifier.height(6.dp))
                 Button(onClick = onAddAlarm) {
                     Text("알람 추가")
