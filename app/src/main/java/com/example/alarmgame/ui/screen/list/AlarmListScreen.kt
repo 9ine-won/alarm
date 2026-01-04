@@ -42,6 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.alarmgame.domain.model.Alarm
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.Duration
+import com.example.alarmgame.domain.util.RepeatDays
 
 @Composable
 fun AlarmListScreen(
@@ -180,11 +184,21 @@ private fun AlarmRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = describeRepeat(alarm.repeatDaysMask),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = describeRepeat(alarm.repeatDaysMask),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (alarm.enabled) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = calculateRemainingTime(alarm),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
             }
             Column(
                 horizontalAlignment = Alignment.End
@@ -212,6 +226,37 @@ private fun AlarmRow(
             }
         }
     }
+}
+
+private fun calculateRemainingTime(alarm: Alarm): String {
+    val now = ZonedDateTime.now(ZoneId.systemDefault())
+    val targetToday = now.withHour(alarm.hour).withMinute(alarm.minute).withSecond(0).withNano(0)
+    
+    val nextTrigger = if (alarm.repeatDaysMask == 0) {
+        if (targetToday.isAfter(now)) targetToday else targetToday.plusDays(1)
+    } else {
+        val repeatDays = RepeatDays.daysFrom(alarm.repeatDaysMask)
+        var best: ZonedDateTime? = null
+        for (offset in 0L..7L) {
+             val day = now.plusDays(offset)
+            if (repeatDays.contains(day.dayOfWeek)) {
+                val candidate = day.withHour(alarm.hour).withMinute(alarm.minute)
+                    .withSecond(0).withNano(0)
+                if (candidate.isAfter(now)) {
+                    if (best == null || candidate.isBefore(best)) {
+                        best = candidate
+                    }
+                }
+            }
+        }
+        best ?: targetToday.plusDays(1) // Fallback
+    }
+
+    val duration = Duration.between(now, nextTrigger)
+    val hours = duration.toHours()
+    val minutes = duration.toMinutes() % 60
+    
+    return if (hours > 0) "${hours}시간 ${minutes}분 후" else "${minutes}분 후"
 }
 
 @Composable
@@ -245,8 +290,30 @@ private fun EmptyState(
 private fun formatTime(hour: Int, minute: Int): String =
     String.format("%02d:%02d", hour, minute)
 
-private fun describeRepeat(mask: Int): String =
-    if (mask == 0) "한 번 울림" else "반복 요일 설정됨"
+private fun describeRepeat(mask: Int): String {
+    if (mask == 0) return "한 번 울림"
+    
+    val days = RepeatDays.daysFrom(mask).sorted()
+    if (days.size == 7) return "매일"
+    
+    val isWeekend = days.size == 2 && days.contains(java.time.DayOfWeek.SATURDAY) && days.contains(java.time.DayOfWeek.SUNDAY)
+    if (isWeekend) return "주말"
+    
+    val isWeekdays = days.size == 5 && !days.contains(java.time.DayOfWeek.SATURDAY) && !days.contains(java.time.DayOfWeek.SUNDAY)
+    if (isWeekdays) return "주중"
+    
+    return days.joinToString(" ") { 
+        when(it) {
+            java.time.DayOfWeek.MONDAY -> "월"
+            java.time.DayOfWeek.TUESDAY -> "화"
+            java.time.DayOfWeek.WEDNESDAY -> "수"
+            java.time.DayOfWeek.THURSDAY -> "목"
+            java.time.DayOfWeek.FRIDAY -> "금"
+            java.time.DayOfWeek.SATURDAY -> "토"
+            java.time.DayOfWeek.SUNDAY -> "일"
+        }
+    }
+}
 
 @Composable
 private fun HeroCard(

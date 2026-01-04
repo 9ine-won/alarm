@@ -22,10 +22,15 @@ import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Gamepad
 import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.Vibration
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -41,6 +46,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.runtime.remember
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,6 +74,8 @@ import com.example.alarmgame.domain.model.GameType
 import com.example.alarmgame.domain.model.SoundType
 import com.example.alarmgame.domain.util.RepeatDays
 import java.time.DayOfWeek
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -217,7 +232,7 @@ private fun TimePickerCard(
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Light)
             )
             Text(
-                text = repeatSummary(repeatDaysMask),
+                text = repeatSummary(repeatDaysMask, hour, minute),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -230,6 +245,7 @@ private fun TimePickerCard(
                     value = hour,
                     label = "시",
                     modifier = Modifier.weight(1f),
+                    onValueChange = onHourChange,
                     onIncrement = { onHourChange((hour + 1) % 24) },
                     onDecrement = { onHourChange((hour - 1 + 24) % 24) }
                 )
@@ -242,6 +258,7 @@ private fun TimePickerCard(
                     value = minute,
                     label = "분",
                     modifier = Modifier.weight(1f),
+                    onValueChange = onMinuteChange,
                     onIncrement = { onMinuteChange((minute + 1) % 60) },
                     onDecrement = { onMinuteChange((minute - 1 + 60) % 60) }
                 )
@@ -254,6 +271,7 @@ private fun TimePickerCard(
 private fun NumberStepper(
     value: Int,
     label: String,
+    onValueChange: (Int) -> Unit,
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
     modifier: Modifier = Modifier
@@ -268,10 +286,63 @@ private fun NumberStepper(
         IconButton(onClick = onIncrement) {
             Icon(imageVector = Icons.Default.KeyboardArrowUp, contentDescription = "증가")
         }
-        Text(
-            text = value.toString().padStart(2, '0'),
-            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Light)
+        
+        var isFocused by remember { mutableStateOf(false) }
+        var textValue by remember { 
+            mutableStateOf(TextFieldValue(value.toString().padStart(2, '0'))) 
+        }
+
+        // 외부에서 숫자가 바뀌면 (증감 버튼 등) 텍스트 동기화
+        LaunchedEffect(value) {
+            if (!isFocused) {
+                val formatted = value.toString().padStart(2, '0')
+                textValue = textValue.copy(text = formatted)
+            }
+        }
+
+        BasicTextField(
+            value = textValue,
+            onValueChange = { newValue ->
+                val digits = newValue.text.filter { it.isDigit() }
+                
+                // 새로운 숫자가 들어오면 마지막 2자리만 유지
+                val processed = if (digits.length > 2) digits.takeLast(2) else digits
+                
+                // 텍스트 상태 업데이트
+                textValue = newValue.copy(
+                    text = processed,
+                    selection = TextRange(processed.length)
+                )
+
+                // 유효한 숫자인 경우 즉시 ViewModel에 전달
+                processed.toIntOrNull()?.let { onValueChange(it) }
+            },
+            textStyle = MaterialTheme.typography.headlineSmall.copy(
+                fontWeight = FontWeight.Light,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            modifier = Modifier
+                .width(60.dp)
+                .onFocusChanged { 
+                    isFocused = it.isFocused
+                    if (it.isFocused) {
+                        // 포커스를 얻을 때 텍스트가 전체 선택되거나 초기화되도록 설정
+                        val currentText = value.toString().padStart(2, '0')
+                        textValue = TextFieldValue(
+                            text = currentText,
+                            selection = TextRange(0, currentText.length)
+                        )
+                    } else {
+                        // 포커스를 잃을 때 0 패딩 처리
+                        textValue = TextFieldValue(value.toString().padStart(2, '0'))
+                    }
+                }
         )
+
         IconButton(onClick = onDecrement) {
             Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = "감소")
         }
@@ -408,7 +479,16 @@ private fun SoundCard(
     soundType: SoundType,
     onSelect: (String) -> Unit
 ) {
-    val options = listOf("기본 알람음", "부드러운 종소리", "경쾌한 벨소리", "강한 알람음", "커스텀...")
+    val options = listOf(
+        "기본 알람음", 
+        "부드러운 종소리", 
+        "경쾌한 벨소리", 
+        "강한 알람음",
+        "🎸 락 기타 리프",
+        "🤘 메탈 리프",
+        "🎸 Tough Times",
+        "커스텀..."
+    )
     var expanded by rememberSaveable { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -563,31 +643,43 @@ private fun GameCard(
             if (gameEnabled) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    gameCards.forEach { (type, label) ->
-                        val selected = type == game
-                        Card(
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                    GameType.values().forEach { type ->
+                        val selected = game == type
+                        val label = when (type) {
+                            GameType.MOLE -> "두더지 (클래식)"
+                            GameType.MOLE_HELL -> "두더지 (지옥)"
+                            GameType.SMASH -> "스매시"
+                        }
+                        val emoji = when (type) {
+                            GameType.MOLE -> "🐹"
+                            GameType.MOLE_HELL -> "👿"
+                            GameType.SMASH -> "🔨"
+                        }
+                        
+                        OutlinedCard(
+                            colors = CardDefaults.outlinedCardColors(
+                                containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
                             ),
+                            border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
+                            modifier = Modifier.weight(1f).clickable { onGameSelect(type) },
                             onClick = { onGameSelect(type) }
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .padding(horizontal = 12.dp, vertical = 14.dp),
+                                    .padding(horizontal = 4.dp, vertical = 14.dp), // 패딩 조정
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(
-                                    text = if (type == GameType.MOLE) "🐹" else "🔨",
+                                    text = emoji,
                                     style = MaterialTheme.typography.headlineSmall
                                 )
                                 Text(
                                     text = label,
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = MaterialTheme.typography.bodySmall, // 글자 크기 조정
+                                    maxLines = 1,
                                     color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
@@ -753,9 +845,22 @@ private fun formattedTime(hour: Int, minute: Int): String {
     return "$period ${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
 }
 
-private fun repeatSummary(mask: Int): String {
-    if (mask == 0) return "한 번만 울립니다"
+private fun repeatSummary(mask: Int, hour: Int? = null, minute: Int? = null): String {
+    if (mask == 0) {
+        if (hour != null && minute != null) {
+            val now = ZonedDateTime.now(ZoneId.systemDefault())
+            val targetToday = now.withHour(hour).withMinute(minute).withSecond(0).withNano(0)
+            val nextAlarm = if (targetToday.isAfter(now)) targetToday else targetToday.plusDays(1)
+            
+            val month = nextAlarm.monthValue
+            val day = nextAlarm.dayOfMonth
+            val dayOfWeek = dayLabel(nextAlarm.dayOfWeek)
+            
+            return "${month}월 ${day}일(${dayOfWeek}) 한 번만 울립니다"
+        }
+        return "한 번만 울립니다"
+    }
     val days = RepeatDays.daysFrom(mask).sortedBy { it.ordinal }
     if (days.size == 7) return "매일 반복"
-    return days.joinToString(", ") { dayLabel(it) }
+    return days.joinToString(", ") { dayLabel(it) } + " 반복"
 }
