@@ -2,6 +2,7 @@ package com.example.alarmgame.domain.model
 
 enum class GameType {
     MOLE,
+    MOLE_HELL,
     SMASH
 }
 
