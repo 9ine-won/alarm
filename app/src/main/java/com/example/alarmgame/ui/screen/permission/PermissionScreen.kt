@@ -41,9 +41,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.alarmgame.platform.PermissionManager
 
 @Composable
-fun PermissionScreen(
-    onAllPermissionsGranted: () -> Unit
-) {
+fun PermissionScreen(onAllPermissionsGranted: () -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -65,21 +63,22 @@ fun PermissionScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(24.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = "앱 권한 설정",
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
         )
         Text(
             text = "알람이 정상적으로 작동하려면\n아래 권한이 필요합니다.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
+            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp),
         )
 
         PermissionCard(
@@ -92,7 +91,7 @@ fun PermissionScreen(
                 activity?.let {
                     PermissionManager.requestNotificationPermission(it, PermissionManager.REQUEST_CODE_NOTIFICATION)
                 }
-            }
+            },
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -104,7 +103,7 @@ fun PermissionScreen(
             isGranted = exactAlarmGranted,
             onRequestClick = {
                 PermissionManager.openExactAlarmSettings(context)
-            }
+            },
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -116,7 +115,7 @@ fun PermissionScreen(
             isGranted = overlayGranted,
             onRequestClick = {
                 PermissionManager.openOverlaySettings(context)
-            }
+            },
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -124,7 +123,7 @@ fun PermissionScreen(
         if (notificationGranted && exactAlarmGranted && overlayGranted) {
             Button(
                 onClick = onAllPermissionsGranted,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text("시작하기")
             }
@@ -132,7 +131,7 @@ fun PermissionScreen(
             Text(
                 text = "모든 권한을 허용해 주세요.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
             )
         }
     }
@@ -144,43 +143,49 @@ private fun PermissionCard(
     title: String,
     description: String,
     isGranted: Boolean,
-    onRequestClick: () -> Unit
+    onRequestClick: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isGranted)
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-            else
-                MaterialTheme.colorScheme.surfaceVariant
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    if (isGranted) {
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
+            ),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(32.dp),
-                tint = if (isGranted)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant
+                tint =
+                    if (isGranted) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
@@ -188,7 +193,7 @@ private fun PermissionCard(
                 Icon(
                     imageVector = Icons.Outlined.CheckCircle,
                     contentDescription = "허용됨",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
                 )
             } else {
                 OutlinedButton(onClick = onRequestClick) {

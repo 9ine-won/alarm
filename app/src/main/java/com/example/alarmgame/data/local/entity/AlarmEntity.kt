@@ -25,5 +25,5 @@ data class AlarmEntity(
     val difficulty: Difficulty,
     val nextTriggerAt: Long,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
 )

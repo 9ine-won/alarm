@@ -6,5 +6,5 @@ data class AlarmHistory(
     val firedAt: Long,
     val dismissedAt: Long?,
     val snoozedCount: Int,
-    val gameSuccess: Boolean
+    val gameSuccess: Boolean,
 )

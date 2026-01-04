@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AlarmDao {
-
     @Query("SELECT * FROM alarms ORDER BY enabled DESC, nextTriggerAt ASC")
     fun observeAlarms(): Flow<List<AlarmEntity>>
 
@@ -31,8 +30,16 @@ interface AlarmDao {
     suspend fun delete(alarm: AlarmEntity)
 
     @Query("UPDATE alarms SET enabled = :enabled, updatedAt = :updatedAt WHERE id = :id")
-    suspend fun updateEnabled(id: Long, enabled: Boolean, updatedAt: Long)
+    suspend fun updateEnabled(
+        id: Long,
+        enabled: Boolean,
+        updatedAt: Long,
+    )
 
     @Query("UPDATE alarms SET nextTriggerAt = :nextTriggerAt, updatedAt = :updatedAt WHERE id = :id")
-    suspend fun updateNextTrigger(id: Long, nextTriggerAt: Long, updatedAt: Long)
+    suspend fun updateNextTrigger(
+        id: Long,
+        nextTriggerAt: Long,
+        updatedAt: Long,
+    )
 }

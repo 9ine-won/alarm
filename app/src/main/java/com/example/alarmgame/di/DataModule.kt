@@ -22,7 +22,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DataModule {
-
     @Binds
     @Singleton
     abstract fun bindAlarmRepository(impl: AlarmRepositoryImpl): AlarmRepository
@@ -38,7 +37,9 @@ abstract class DataModule {
     companion object {
         @Provides
         @Singleton
-        fun provideDatabase(@ApplicationContext context: Context): AlarmDatabase =
+        fun provideDatabase(
+            @ApplicationContext context: Context,
+        ): AlarmDatabase =
             Room.databaseBuilder(context, AlarmDatabase::class.java, "alarm-db")
                 .fallbackToDestructiveMigration()
                 .build()

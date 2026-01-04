@@ -6,7 +6,6 @@ import com.example.alarmgame.domain.model.GameType
 import com.example.alarmgame.domain.model.SoundType
 
 class EnumConverters {
-
     @TypeConverter
     fun fromGameType(type: GameType): String = type.name
 

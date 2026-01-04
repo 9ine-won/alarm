@@ -10,5 +10,5 @@ data class AlarmHistoryEntity(
     val firedAt: Long,
     val dismissedAt: Long?,
     val snoozedCount: Int,
-    val gameSuccess: Boolean
+    val gameSuccess: Boolean,
 )

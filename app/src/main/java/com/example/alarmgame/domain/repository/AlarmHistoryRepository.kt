@@ -5,5 +5,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface AlarmHistoryRepository {
     suspend fun insert(history: AlarmHistory): Long
-    fun observeByAlarm(alarmId: Long, limit: Int = 20): Flow<List<AlarmHistory>>
+
+    fun observeByAlarm(
+        alarmId: Long,
+        limit: Int = 20,
+    ): Flow<List<AlarmHistory>>
 }

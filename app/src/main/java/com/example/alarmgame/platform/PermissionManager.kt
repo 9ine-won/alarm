@@ -17,7 +17,6 @@ import androidx.core.content.ContextCompat
  * 앱에 필요한 권한들을 관리하는 유틸리티 클래스입니다.
  */
 object PermissionManager {
-
     /**
      * 알림 권한이 부여되었는지 확인합니다. (Android 13+)
      */
@@ -25,7 +24,7 @@ object PermissionManager {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(
                 context,
-                Manifest.permission.POST_NOTIFICATIONS
+                Manifest.permission.POST_NOTIFICATIONS,
             ) == PackageManager.PERMISSION_GRANTED
         } else {
             NotificationManagerCompat.from(context).areNotificationsEnabled()
@@ -60,19 +59,22 @@ object PermissionManager {
      */
     fun hasAllRequiredPermissions(context: Context): Boolean {
         return hasNotificationPermission(context) &&
-                hasExactAlarmPermission(context) &&
-                hasOverlayPermission(context)
+            hasExactAlarmPermission(context) &&
+            hasOverlayPermission(context)
     }
 
     /**
      * 알림 권한을 요청합니다. (Android 13+)
      */
-    fun requestNotificationPermission(activity: Activity, requestCode: Int) {
+    fun requestNotificationPermission(
+        activity: Activity,
+        requestCode: Int,
+    ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(
                 activity,
                 arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                requestCode
+                requestCode,
             )
         }
     }
@@ -82,9 +84,10 @@ object PermissionManager {
      */
     fun openExactAlarmSettings(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                data = Uri.parse("package:${context.packageName}")
-            }
+            val intent =
+                Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    data = Uri.parse("package:${context.packageName}")
+                }
             context.startActivity(intent)
         }
     }
@@ -94,10 +97,11 @@ object PermissionManager {
      */
     fun openOverlaySettings(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:${context.packageName}")
-            )
+            val intent =
+                Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:${context.packageName}"),
+                )
             context.startActivity(intent)
         }
     }
@@ -106,9 +110,10 @@ object PermissionManager {
      * 앱 상세 설정 화면을 엽니다.
      */
     fun openAppSettings(context: Context) {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            data = Uri.parse("package:${context.packageName}")
-        }
+        val intent =
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:${context.packageName}")
+            }
         context.startActivity(intent)
     }
 

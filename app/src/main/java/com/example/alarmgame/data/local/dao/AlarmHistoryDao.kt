@@ -9,10 +9,12 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AlarmHistoryDao {
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(history: AlarmHistoryEntity): Long
 
     @Query("SELECT * FROM alarm_history WHERE alarmId = :alarmId ORDER BY firedAt DESC LIMIT :limit")
-    fun observeByAlarm(alarmId: Long, limit: Int = 20): Flow<List<AlarmHistoryEntity>>
+    fun observeByAlarm(
+        alarmId: Long,
+        limit: Int = 20,
+    ): Flow<List<AlarmHistoryEntity>>
 }

@@ -12,14 +12,14 @@ import com.example.alarmgame.data.local.entity.AlarmHistoryEntity
 @Database(
     entities = [
         AlarmEntity::class,
-        AlarmHistoryEntity::class
+        AlarmHistoryEntity::class,
     ],
     version = 2,
-    exportSchema = true
+    exportSchema = true,
 )
 @TypeConverters(EnumConverters::class)
 abstract class AlarmDatabase : RoomDatabase() {
     abstract fun alarmDao(): AlarmDao
+
     abstract fun alarmHistoryDao(): AlarmHistoryDao
 }
-

@@ -13,20 +13,20 @@ import com.example.alarmgame.app.AlarmReceiver
 import com.example.alarmgame.app.AlarmRingingActivity
 
 class AlarmNotificationManager(private val context: Context) {
-
     private val notificationManager: NotificationManager =
         context.getSystemService(NotificationManager::class.java)
 
     fun createChannels() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val channel = NotificationChannel(
-            CHANNEL_ID_ALARM,
-            "알람",
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply {
-            description = "알람 알림 및 전체화면 알림용 채널"
-            lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
-        }
+        val channel =
+            NotificationChannel(
+                CHANNEL_ID_ALARM,
+                "알람",
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = "알람 알림 및 전체화면 알림용 채널"
+                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+            }
         notificationManager.createNotificationChannel(channel)
     }
 
@@ -35,16 +35,18 @@ class AlarmNotificationManager(private val context: Context) {
     }
 
     fun buildRingingNotification(alarmId: Long): Notification {
-        val fullScreenIntent = Intent(context, AlarmRingingActivity::class.java).apply {
-            putExtra(AlarmReceiver.EXTRA_ALARM_ID, alarmId)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        val fullScreenPendingIntent = PendingIntent.getActivity(
-            context,
-            alarmId.toInt(),
-            fullScreenIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val fullScreenIntent =
+            Intent(context, AlarmRingingActivity::class.java).apply {
+                putExtra(AlarmReceiver.EXTRA_ALARM_ID, alarmId)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+        val fullScreenPendingIntent =
+            PendingIntent.getActivity(
+                context,
+                alarmId.toInt(),
+                fullScreenIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
 
         return NotificationCompat.Builder(context, CHANNEL_ID_ALARM)
             .setSmallIcon(R.drawable.app_icon)

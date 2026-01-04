@@ -43,25 +43,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SettingsScreen(
-    onBack: () -> Unit
-) {
+fun SettingsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     var notificationsAllowed by remember { mutableStateOf(notificationsEnabled(context)) }
     var exactAlarmAllowed by remember { mutableStateOf(canScheduleExactAlarms(context)) }
     var ignoringBatteryOpt by remember { mutableStateOf(isIgnoringBatteryOpt(context)) }
-    val background = Brush.verticalGradient(
-        listOf(
-            MaterialTheme.colorScheme.surfaceVariant,
-            MaterialTheme.colorScheme.background
+    val background =
+        Brush.verticalGradient(
+            listOf(
+                MaterialTheme.colorScheme.surfaceVariant,
+                MaterialTheme.colorScheme.background,
+            ),
         )
-    )
 
-    val notificationLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        notificationsAllowed = granted || notificationsEnabled(context)
-    }
+    val notificationLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+        ) { granted ->
+            notificationsAllowed = granted || notificationsEnabled(context)
+        }
 
     LaunchedEffect(Unit) {
         notificationsAllowed = notificationsEnabled(context)
@@ -70,9 +70,10 @@ fun SettingsScreen(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(background)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(background),
     ) {
         Scaffold(
             containerColor = Color.Transparent,
@@ -83,16 +84,17 @@ fun SettingsScreen(
                         IconButton(onClick = onBack) {
                             Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "뒤로")
                         }
-                    }
+                    },
                 )
-            }
+            },
         ) { padding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 SettingsHeader()
                 PermissionCard(
@@ -106,21 +108,21 @@ fun SettingsScreen(
                         } else {
                             openAppNotificationSettings(context)
                         }
-                    }
+                    },
                 )
                 PermissionCard(
                     title = "정확 알람",
                     description = "Android 12+에서 정확 알람을 보장하려면 설정에서 허용이 필요할 수 있습니다.",
                     status = if (exactAlarmAllowed) "허용됨" else "설정 필요",
                     actionText = "설정 열기",
-                    onAction = { openExactAlarmSettings(context) }
+                    onAction = { openExactAlarmSettings(context) },
                 )
                 PermissionCard(
                     title = "배터리 최적화 예외",
                     description = "Doze 중 알람 누락을 줄이기 위해 배터리 최적화 예외 설정을 권장합니다.",
                     status = if (ignoringBatteryOpt) "예외 적용" else "권장",
                     actionText = "설정 열기",
-                    onAction = { openBatteryOptimizationSettings(context) }
+                    onAction = { openBatteryOptimizationSettings(context) },
                 )
             }
         }
@@ -129,27 +131,29 @@ fun SettingsScreen(
 
 @Composable
 private fun SettingsHeader() {
-    val gradient = Brush.linearGradient(
-        listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.secondary
+    val gradient =
+        Brush.linearGradient(
+            listOf(
+                MaterialTheme.colorScheme.primary,
+                MaterialTheme.colorScheme.secondary,
+            ),
         )
-    )
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
     ) {
         Box(
-            modifier = Modifier
-                .background(gradient, shape = RoundedCornerShape(18.dp))
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .background(gradient, shape = RoundedCornerShape(18.dp))
+                    .padding(16.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("권한 및 안정성", color = MaterialTheme.colorScheme.onPrimary)
                 Text(
                     "알람 누락 없이 울리도록 권한과 설정을 점검하세요.",
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = MaterialTheme.colorScheme.onPrimary,
                 )
             }
         }
@@ -162,23 +166,24 @@ private fun PermissionCard(
     description: String,
     status: String,
     actionText: String,
-    onAction: () -> Unit
+    onAction: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(description, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text("상태: $status", style = MaterialTheme.typography.bodyMedium)
                 Button(onClick = onAction) {
@@ -205,18 +210,20 @@ private fun isIgnoringBatteryOpt(context: Context): Boolean {
 }
 
 private fun openAppNotificationSettings(context: Context) {
-    val intent = Intent().apply {
-        action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
-        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-    }
+    val intent =
+        Intent().apply {
+            action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        }
     context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 }
 
 private fun openExactAlarmSettings(context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-            data = Uri.parse("package:${context.packageName}")
-        }
+        val intent =
+            Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                data = Uri.parse("package:${context.packageName}")
+            }
         context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 }

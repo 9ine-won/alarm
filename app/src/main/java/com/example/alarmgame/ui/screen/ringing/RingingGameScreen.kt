@@ -17,34 +17,36 @@ fun RingingGameScreen(
     gameType: com.example.alarmgame.domain.model.GameType,
     difficulty: com.example.alarmgame.domain.model.Difficulty,
     onGameComplete: () -> Unit,
-    onSnooze: () -> Unit
+    onSnooze: () -> Unit,
 ) {
     // 게임 타입에 따라 화면 분기
     when (gameType) {
         com.example.alarmgame.domain.model.GameType.MOLE,
-        com.example.alarmgame.domain.model.GameType.MOLE_HELL -> {
+        com.example.alarmgame.domain.model.GameType.MOLE_HELL,
+        -> {
             WhacAMoleGameScreen(
                 gameType = gameType,
                 difficulty = difficulty,
-                onGameComplete = onGameComplete
+                onGameComplete = onGameComplete,
             )
         }
         else -> {
             // 다른 게임이 추가될 때까지 기본 placeholder 혹은 Fallback
-             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = "준비 중인 게임입니다.",
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.headlineMedium,
                 )
                 Button(
                     modifier = Modifier.padding(top = 24.dp),
-                    onClick = onGameComplete
+                    onClick = onGameComplete,
                 ) {
                     Text("게임 확인 (건너뛰기)")
                 }
