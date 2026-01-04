@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
 
     <application
         android:name=".app.AlarmGameApp"
@@ -25,7 +27,7 @@
             android:name=".app.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:showOnLockScreen="true"
+            android:showWhenLocked="true"
             android:turnScreenOn="true"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/Theme.AlarmGame.NoActionBar">
@@ -39,7 +41,7 @@
             android:name=".app.AlarmRingingActivity"
             android:exported="false"
             android:launchMode="singleTop"
-            android:showOnLockScreen="true"
+            android:showWhenLocked="true"
             android:turnScreenOn="true"
             android:excludeFromRecents="true"
             android:theme="@style/Theme.AlarmGame.NoActionBar"

@@ -52,6 +52,8 @@ class AlarmNotificationManager(private val context: Context) {
             .setContentText("알람을 해제하려면 게임을 완료하세요.")
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setSilent(false)
             .setOngoing(true)
             .setAutoCancel(false)
             .setFullScreenIntent(fullScreenPendingIntent, true)
